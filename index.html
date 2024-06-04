@@ -5,20 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prevent Sleep</title>
+    <style>
+        #status {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Prevent Phone from Sleeping</h1>
     <button id="wakeLockButton">Request Wake Lock</button>
+    <div id="status">Wake lock is not active.</div>
 
     <script>
         let wakeLock = null;
+        const statusDiv = document.getElementById('status');
 
         async function requestWakeLock() {
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
+                statusDiv.textContent = 'Wake lock is active';
                 console.log('Wake lock is active');
+
+                // Listen for release event
+                wakeLock.addEventListener('release', () => {
+                    statusDiv.textContent = 'Wake lock was released';
+                    console.log('Wake lock was released');
+                });
             } catch (err) {
+                statusDiv.textContent = `Wake lock request failed: ${err.name}, ${err.message}`;
                 console.error(`Wake lock request failed: ${err.name}, ${err.message}`);
             }
         }
@@ -26,7 +42,7 @@
         document.getElementById('wakeLockButton').addEventListener('click', requestWakeLock);
 
         // Optional: Automatically request wake lock on page load
-        document.addEventListener('DOMContentLoaded', requestWakeLock);
+        // document.addEventListener('DOMContentLoaded', requestWakeLock);
     </script>
 </body>
 
