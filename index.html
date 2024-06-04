@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prevent Sleep</title>
+</head>
+
+<body>
+    <h1>Prevent Phone from Sleeping</h1>
+    <button id="wakeLockButton">Request Wake Lock</button>
+
+    <script>
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake lock is active');
+            } catch (err) {
+                console.error(`Wake lock request failed: ${err.name}, ${err.message}`);
+            }
+        }
+
+        document.getElementById('wakeLockButton').addEventListener('click', requestWakeLock);
+
+        // Optional: Automatically request wake lock on page load
+        document.addEventListener('DOMContentLoaded', requestWakeLock);
+    </script>
+</body>
+
+</html>
