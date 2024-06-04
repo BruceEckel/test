@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prevent Sleep</title>
+    <style>
+        #status {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Prevent Phone from Sleeping</h1>
+    <button id="wakeLockButton">Request Wake Lock</button>
+    <button id="releaseWakeLockButton" disabled>Release Wake Lock</button>
+    <div id="status">Wake lock is not active.</div>
+
+    <script>
+        let wakeLock = null;
+        const statusDiv = document.getElementById('status');
+        const wakeLockButton = document.getElementById('wakeLockButton');
+        const releaseWakeLockButton = document.getElementById('releaseWakeLockButton');
+
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                statusDiv.textContent = 'Wake lock is active';
+                wakeLockButton.disabled = true;
+                releaseWakeLockButton.disabled = false;
+                console.log('Wake lock is active');
+
+                // Listen for release event
+                wakeLock.addEventListener('release', () => {
+                    statusDiv.textContent = 'Wake lock was released';
+                    wakeLockButton.disabled = false;
+                    releaseWakeLockButton.disabled = true;
+                    console.log('Wake lock was released');
+                });
+            } catch (err) {
+                statusDiv.textContent = `Wake lock request failed: ${err.name}, ${err.message}`;
+                console.error(`Wake lock request failed: ${err.name}, ${err.message}`);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+                statusDiv.textContent = 'Wake lock was manually released';
+                wakeLockButton.disabled = false;
+                releaseWakeLockButton.disabled = true;
+                console.log('Wake lock was manually released');
+            }
+        }
+
+        wakeLockButton.addEventListener('click', requestWakeLock);
+        releaseWakeLockButton.addEventListener('click', releaseWakeLock);
+
+        // Optional: Automatically request wake lock on page load
+        // document.addEventListener('DOMContentLoaded', requestWakeLock);
+    </script>
+</body>
+
+</html>

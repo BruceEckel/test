@@ -4,9 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prevent Sleep</title>
+    <title>Basic Voice Command Example</title>
     <style>
-        #status {
+        #startListening {
+            font-size: 1.5em;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin: 5px;
+        }
+
+        #voiceStatus {
             margin-top: 20px;
             font-size: 1.2em;
         }
@@ -14,54 +21,41 @@
 </head>
 
 <body>
-    <h1>Prevent Phone from Sleeping</h1>
-    <button id="wakeLockButton">Request Wake Lock</button>
-    <button id="releaseWakeLockButton" disabled>Release Wake Lock</button>
-    <div id="status">Wake lock is not active.</div>
+    <h1>Basic Voice Command Example</h1>
+    <button id="startListening">Start Listening</button>
+    <div id="voiceStatus">Voice command is not active.</div>
 
     <script>
-        let wakeLock = null;
-        const statusDiv = document.getElementById('status');
-        const wakeLockButton = document.getElementById('wakeLockButton');
-        const releaseWakeLockButton = document.getElementById('releaseWakeLockButton');
+        // Voice recognition setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
 
-        async function requestWakeLock() {
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                statusDiv.textContent = 'Wake lock is active';
-                wakeLockButton.disabled = true;
-                releaseWakeLockButton.disabled = false;
-                console.log('Wake lock is active');
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
 
-                // Listen for release event
-                wakeLock.addEventListener('release', () => {
-                    statusDiv.textContent = 'Wake lock was released';
-                    wakeLockButton.disabled = false;
-                    releaseWakeLockButton.disabled = true;
-                    console.log('Wake lock was released');
-                });
-            } catch (err) {
-                statusDiv.textContent = `Wake lock request failed: ${err.name}, ${err.message}`;
-                console.error(`Wake lock request failed: ${err.name}, ${err.message}`);
-            }
-        }
+        recognition.onstart = () => {
+            document.getElementById('voiceStatus').textContent = 'Voice command is active.';
+        };
 
-        async function releaseWakeLock() {
-            if (wakeLock) {
-                await wakeLock.release();
-                wakeLock = null;
-                statusDiv.textContent = 'Wake lock was manually released';
-                wakeLockButton.disabled = false;
-                releaseWakeLockButton.disabled = true;
-                console.log('Wake lock was manually released');
-            }
-        }
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.resultIndex][0].transcript.trim().toLowerCase();
+            console.log('Voice command received:', transcript);
+            document.getElementById('voiceStatus').textContent = `Voice command received: ${transcript}`;
+        };
 
-        wakeLockButton.addEventListener('click', requestWakeLock);
-        releaseWakeLockButton.addEventListener('click', releaseWakeLock);
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            document.getElementById('voiceStatus').textContent = `Voice command error: ${event.error}`;
+        };
 
-        // Optional: Automatically request wake lock on page load
-        // document.addEventListener('DOMContentLoaded', requestWakeLock);
+        recognition.onend = () => {
+            document.getElementById('voiceStatus').textContent = 'Voice command is not active.';
+        };
+
+        document.getElementById('startListening').addEventListener('click', () => {
+            recognition.start();
+        });
     </script>
 </body>
 
